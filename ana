@@ -1,0 +1,143 @@
+library(twitteR)
+library(bitops)
+library(RCurl)
+library(RJSONIO)
+library(stringr)
+library(tm)
+library(wordcloud)
+library(ROAuth)
+library(plyr)
+
+
+api_key<- "GLKYSau02ydx9NvmIEDW2FGOP"
+api_secret<- "poK917YT1nXtivoCYG55JsP1ZBlDMgBlmCBikOw2XSYI08OsWR"
+access_token<- "569237729-qvusWOklhOa7l5ooxE9DmFNwE4ogWepPDTEwYVtm"
+access_token_secret<- "oKmsLgjLcXCbdzw2rV2vUsW3Wa6qpDWz5dM771D6BfPzl"
+setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
+require(devtools)
+
+
+user <- getUser("usrnme")
+userFriends <- user$getFriends()
+userFriends
+userFollowers <- user$getFollowers()
+userFollowers
+
+userNeighbors <- union(userFollowers,userFriends)
+userNeighbors
+
+userNeighbors.df = twListToDF(userNeighbors)
+userNeighbors.df
+
+
+tweets <- searchTwitter("Obamacare",n=50,lang="en",since="2015-03-20")
+tweets
+#transform tweets list into a data frame
+tweets.df <- twListToDF(tweets)
+tweets.df
+#search twitter
+tweets<-searchTwitter("Narendra Modi",n=100)
+(n.tweet <-length(tweets))
+tweets[1:5]
+
+#convert tweets to DF
+#tweets.df <- do.call("rbind",lapply(tweets, as.data.frame))
+tweets.df <- twListToDF(tweets)
+dim(tweets.df)
+
+getSources()
+
+library(tm)
+
+getReaders()
+myCorpus <- Corpus(VectorSource(tweets.df$text))
+inspect(myCorpus[1:2])
+
+#transformation
+
+whitespace <- tm_map(myCorpus, stripWhitespace)
+whitespace
+Lowers <- tm_map(myCorpus,content_transformer(tolower))
+
+#remove punctuation
+myCorpus <- tm_map(myCorpus,removePunctuation)
+#remove numbers
+myCorpus <- tm_map(myCorpus,removeNumbers)
+#remove URLs
+removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
+myCorpus <- tm_map(myCorpus,removeURL)
+#install stemming text SnowballC
+
+library(SnowballC)
+myCorpus <-tm_map(myCorpus, stemDocument)
+inspect(myCorpus[4])
+
+#read program
+myCorpus.fun<-function(myCorpus, lower,upper)
+{
+for(i in lower:upper)
+{
+cat (paste("[[",i,"]]",sep=""))
+writeLines (strwrap (myCorpus [[i]], width=25))
+cat("\n")
+}
+}
+
+myCorpus.fun(myCorpus,4,9) #it shows mssg btwn 4 n 9
+# add two extra stop words: available n via
+myStopwords <- c(stopwords("english"), "available","via")
+#remove 'r' and modi 'mod' from stopwords
+myStopwords <- setdiff(myStopwords, c("r", "modi"))
+
+#remove Stopwords from croups
+myCorpus <- tm_map(myCorpus,removeWords, myStopwords)
+
+#keep a copy of croups
+myCorpusCopy <- myCorpus
+
+#stem words
+myCorpus <- tm_map(myCorpus, stemDocument)
+myCorpus
+
+#creating term-document metrices
+myCorpus <- tm_map (myCorpus, PlainTextDocument)
+tmDoc<-TermDocumentMatrix(myCorpus,control=list(wordLength=c(1,Inf)))
+tmDoc
+
+dimnames(tmDoc)$terms
+dtm <-DocumentTermMatrix(myCorpus)
+inspect(dtm[5:10,20:25])
+findFreqTerms(dtm,5)
+
+(freq.terms <- findFreqTerms(dtm, lowfreq = 3))
+
+#(freq.terms<-findFreqTerms(dtm, 4))
+term.freq <- rowSums(as.matrix(dtm))
+term.freq <-subset(term.freq,term.freq >=3)
+df <-data.frame(term = names(term.freq),freq =term.freq)
+library(ggplot2)
+ggplot(df, aes(x = term, y=freq)) + geom_bar(stat= "identity")+xlab("Terms") + ylab("count")+coord_flip()
+
+findAssocs(dtm, "modi", 0.2)
+findAssocs(dtm, "rajiv", 0.25)
+
+library(graph)
+library(Rgraphviz)
+require(grid)
+plot(dtm, term = freq.terms, corThreshold = 0.12, weighting = T)
+
+#install world cloud
+wordcloud(myCorpus,scale=c(5,0.5),max.words=50,random.order=FALSE,rot.per=0.35,use.r.layout=FALSE,colors=brewer.pal(8,"Dark2"))
+
+#remove sparse terms
+
+dtm2 <- removeSparseTerms(dtm,sparse = 0.95)
+m2 <- as.matrix(dtm2)
+
+#cluster terms
+distMatrix <- dist(scale(m2))
+fit <- hclust(distMatrix,method = "ward")
+
+rect.hclust(fit,k = 6) # cut tree into 6 clusters
+plot(fit)
+rect.hclust(fit,k = 6)  # cut tree into 6 clusters
