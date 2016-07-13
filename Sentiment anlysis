@@ -8,10 +8,10 @@ library(ggplot2)
 library(sentiment)
 library(httr)
 library(bitops)
-api_key<-"ep6BcrmmsPR2JeN9gv0PL8xUd"
-api_secret<-"ptjt7ZU0uGD4q8hUb02yEfk24JLHk4ACHbpI842wFyK8TXKnvr"
-access_token<-"569237729-RZFn1M08xfpoIyDfZmDTkr8eZHOeThUijG99hFQr"
-access_token_secret<-"6r4SgY1xdc7obpOHWZYNJuidMdKYDEJsJuDUD3ITYHMvd"
+api_key<-""
+api_secret<-""
+access_token<-""
+access_token_secret<-""
 setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
 bjp_tweets = searchTwitter("BJP", n=500, lang="en")
 bjp_txt = sapply(bjp_tweets, function(x) x$getText())
