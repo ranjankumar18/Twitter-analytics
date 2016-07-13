@@ -11,7 +11,7 @@ getwd()
 setwd("F:Project/stm/")
 getwd()
 ###Get the datainstall.packages("C:/sentiment_0.2.tar.gz", repos = NULL, type="source")
-data <- readLines("Prepaid.txt") 
+data <- readLines("abc.txt") 
 df <- data.frame(data)
 textdata <- df[df$data, ]
 textdata = gsub("[[:punct:]]", "", textdata)
@@ -44,7 +44,7 @@ sent_df = data.frame(text=textdata,polarity=polarity, stringsAsFactors=FALSE)
 #sent_df = within(sent_df,emotion <- factor(emotion, levels=names(sort(table(emotion), decreasing=TRUE))))
 #Now that we have processed the comments, we can graph the emotions and polarities.
 sent_df
-write.csv(sent_df, "prepaid.csv", row.names=FALSE)
+write.csv(sent_df, "abc.csv", row.names=FALSE)
 ggplot(sent_df, aes(x=emotion)) +
   geom_bar(aes(y=..count.., fill=emotion)) +
   scale_fill_brewer(palette="Dark2") +
