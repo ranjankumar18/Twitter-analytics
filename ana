@@ -9,10 +9,10 @@ library(ROAuth)
 library(plyr)
 
 
-api_key<- "GLKYSau02ydx9NvmIEDW2FGOP"
-api_secret<- "poK917YT1nXtivoCYG55JsP1ZBlDMgBlmCBikOw2XSYI08OsWR"
-access_token<- "569237729-qvusWOklhOa7l5ooxE9DmFNwE4ogWepPDTEwYVtm"
-access_token_secret<- "oKmsLgjLcXCbdzw2rV2vUsW3Wa6qpDWz5dM771D6BfPzl"
+api_key<- ""
+api_secret<- ""
+access_token<- ""
+access_to"
 setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
 require(devtools)
 
